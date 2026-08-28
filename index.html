@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="/sdk.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Хакер кликер</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="game-container">
+        <section class="click-zone">
+            <div id="matrix-bg" class="matrix-background"></div>
+            <div class="terminal-header">
+                <span id="hacker-rank">РАНГ: SCRIPT_KIDDIE</span> | SYSTEM://MAIN_NET/
+            </div>
+            <div class="stats-panel">
+                <div class="crypto-balance"><span id="coins-count">0</span> BTC</div>
+                <div class="income-speed">LOG: +<span id="income-count">0</span> BTC/sec</div>
+                <div class="chips-balance" id="chips-panel" style="display:none; color: #00ffff; font-size: 1.3rem;">
+                    ⚙️ КВАНТОВЫЕ ЧИПЫ: <span id="chips-count">0</span> (<span id="prestige-bonus">0</span>% БОНУС)
+                </div>
+            </div>
+            <div class="monitor-wrapper">
+                <button id="hacker-node" class="node-btn">
+                    <svg class="hacker-svg" viewBox="0 0 100 100" xmlns="http://w3.org">
+                        <circle cx="50" cy="50" r="44" stroke="var(--neon-bright)" stroke-width="3" fill="none"
+                            stroke-dasharray="6,3" />
+                        <path d="M50 15 L50 30 M50 70 L50 85 M15 50 L30 50 M70 50 L85 50" stroke="var(--neon-bright)"
+                            stroke-width="2" />
+                        <path d="M32 32 L42 42 M68 32 L58 42 M32 68 L42 58 M68 68 L58 58" stroke="var(--neon-bright)"
+                            stroke-width="2" />
+                        <circle cx="50" cy="50" r="12" fill="var(--neon-bright)" />
+                    </svg>
+                    <div class="screen-glare"></div>
+                    <div class="node-text">&lt;RUN_EXPLOIT&gt;</div>
+                </button>
+            </div>
+            <div class="ad-wrapper">
+                <button id="ad-boost-btn" class="ad-btn" onclick="showRewardAd()">
+                    ⚡ УСКОРИТЬ ВЗЛОМ (Смотреть видео)
+                </button>
+            </div>
+
+            <div class="prestige-wrapper" style="margin-top: 10px;">
+                <button id="prestige-btn" class="prestige-btn" onclick="triggerPrestige()" style="display:none;">
+                    ⚠️ ПЕРЕЗАГРУЗКА СИСТЕМЫ (Получить <span id="pending-chips">0</span> чипов)
+                </button>
+            </div>
+            <div class="terminal-footer">STATUS: BREAKING_BARRIERS...</div>
+        </section>
+        <section class="shop-zone">
+            <div class="tabs-menu">
+                <button id="tab-shop-btn" class="tab-btn active" onclick="switchTab('shop')">ДАРКНЕТ</button>
+                <button id="tab-attacks-btn" class="tab-btn" onclick="switchTab('attacks')">КИБЕРАТАКИ</buttin>
+            </div>
+            <div class="tabs-scroll-area">
+                <div id="tab-shop" class="tab-content">
+                    <div class="shop-list">
+                        <div class="shop-item" onclick="buyUpgrade('mouse')">
+                            <div class="item-info">
+                                <span class="item-name">Макрос на мышь</span>
+                                <span class="item-desc">+1 к клику</span>
+                            </div>
+                            <button class="buy-btn" id="cost-mouse">80 BTC</button>
+                        </div>
+                        <div class="shop-item" onclick="buyUpgrade('gpu')">
+                            <div class="item-info">
+                                <span class="item-name">Вторая видеокарта</span>
+                                <span class="item-desc">+2 BTC/сек</span>
+                            </div>
+                            <button class="buy-btn" id="cost-gpu">150 BTC</button>
+                        </div>
+                        <div class="shop-item" onclick="buyUpgrade('botnet')">
+                            <div class="item-info">
+                                <span class="item-name">Ботнет из чайников</span>
+                                <span class="item-desc">+15 BTC/сек</span>
+                            </div>
+                            <button class="buy-btn" id="cost-botnet">450 BTC</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="tab-attacks" class="tab-content" style="display: none;">
+                    <div class="shop-list">
+                        <div class="shop-item attack-item" id="attack-school">
+                            <div class="item-info">
+                                <span class="item-name" id="ff">Сайт местной школы</span>
+                                <span class="item-desc" id="ff">Требует: 5 BTC/sec | Награда: 300 BTC</span>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="pb-school"></div>
+                                </div>
+                            </div>
+                            <button class="buy-btn hack-btn" id="ff" onclick="startAttack('school')">ВЗЛОМ (5с)</button>
+                        </div>
+                        <div class="shop-item attack-item" id="attack-bank">
+                            <div class="item-info">
+                                <span class="item-name" id="ff">Городской Банк</span>
+                                <span class="item-desc" id="ff">Требует: 40 BTC/sec | Награда: 2,000 BTC</span>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="pb-bank"></div>
+                                </div>
+                            </div>
+                            <button class="buy-btn hack-btn" id="ff" onclick="startAttack('bank')">ВЗЛОМ (15с)</button>
+                        </div>
+                        <div class="shop-item attack-item" id="attack-pentagon">
+                            <div class="item-info">
+                                <span class="item-name" id="ff">Сервер Пентагона</span>
+                                <span class="item-desc" id="ff">Требует: 300 BTC/sec | Награда: 7,000 BTC</span>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="pb-pentagon"></div>
+                                </div>
+                            </div>
+                            <button class="buy-btn hack-btn" id="ff" onclick="startAttack('pentagon')">ВЗЛОМ
+                                (45с)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-section">
+                <div class="shop-header">//СМЕНА_ИНТЕРФЕЙСА</div>
+                <div class="themes-grid">
+                    <button class="buy-btn theme-btn matrix-t" onclick="applyTheme('matrix')">MATRIX (0
+                        BTC)</button>
+                    <button class="buy-btn theme-btn cyber-t" id="theme-cyber"
+                        onclick="buyTheme('cyber', 1000)">CYBERPUNK (1k BTC)</button>
+                    <button class="buy-btn theme-btn toxic-t" id="theme-toxic" onclick="buyTheme('toxic', 5000)">TOXIC
+                        (5k BTC)</button>
+                    <button class="buy-btn theme-btn blood-t" id="theme-blood"
+                        onclick="buyTheme('blood', 25000)">MALWARE (25k BTC)</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
