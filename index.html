@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <script src="/sdk.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Хакер кликер</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,7 +15,13 @@
         <section class="click-zone">
             <div id="matrix-bg" class="matrix-background"></div>
             <div class="terminal-header">
-                <span id="hacker-rank">РАНГ: SCRIPT_KIDDIE</span> | SYSTEM://MAIN_NET/
+                <span id="hacker-rank">РАНГ: SCRIPT_KIDDIE</span> |
+                <span id="hacker-lvl">LVL: 1</span> |
+                <span id="lvl-exp">EXP: 0/50</span> |
+                SYSTEM://MAIN_NET/
+            </div>
+            <div class="lvl-progress-container">
+                <div id="lvl-progress-bar" class="lvl-progress-bar"></div>
             </div>
             <div class="stats-panel">
                 <div class="crypto-balance"><span id="coins-count">0</span> BTC</div>
@@ -24,6 +31,7 @@
                 </div>
             </div>
             <div class="monitor-wrapper">
+                <div id="wire-left" class="terminal-wire wire-l"></div>
                 <button id="hacker-node" class="node-btn">
                     <svg class="hacker-svg" viewBox="0 0 100 100" xmlns="http://w3.org">
                         <circle cx="50" cy="50" r="44" stroke="var(--neon-bright)" stroke-width="3" fill="none"
@@ -37,13 +45,16 @@
                     <div class="screen-glare"></div>
                     <div class="node-text">&lt;RUN_EXPLOIT&gt;</div>
                 </button>
+                <div id="wire-right" class="terminal-wire wire-r"></div>
             </div>
+            <button id="exploit-btn" class="exploit-danger-btn" style="display: none;" onclick="triggerExploitClick()">
+                [ ! ] СИСТЕМА УЯЗВИМА: ЖМИ СЮДА [ ! ]
+            </button>
             <div class="ad-wrapper">
                 <button id="ad-boost-btn" class="ad-btn" onclick="showRewardAd()">
                     ⚡ УСКОРИТЬ ВЗЛОМ (Смотреть видео)
                 </button>
             </div>
-
             <div class="prestige-wrapper" style="margin-top: 10px;">
                 <button id="prestige-btn" class="prestige-btn" onclick="triggerPrestige()" style="display:none;">
                     ⚠️ ПЕРЕЗАГРУЗКА СИСТЕМЫ (Получить <span id="pending-chips">0</span> чипов)
@@ -116,6 +127,19 @@
                                 (45с)</button>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="skills-section">
+                <div class="shop-header">//АКТИВНЫЕ НАВЫКИ</div>
+                <div class="skills-grid">
+                    <button id="skill-overclock" class="buy-btn skill-btn locked" onclick="triggerOverclock()">
+                        <span class="skill-name">ОВЕРКЛОКИНГ</span>
+                        <div class="skill-status">[БЛОК: LVL 3]</div>
+                    </button>
+                    <button id="skill-ddos" class="buy-btn skill-btn locked" onclick="triggerDdos()">
+                        <span class="skill-name">DDOS-ШТОРМ</span>
+                        <span class="skill-status">[БЛОК: LVL 5]</span>
+                    </button>
                 </div>
             </div>
             <div class="theme-section">

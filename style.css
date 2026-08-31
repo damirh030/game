@@ -79,6 +79,17 @@ button,
     border-bottom: 2px solid #00ff6633;
     position: relative;
     overflow: hidden;
+    animation: monitorBreathe 4s infinite alternate ease-in-out;
+}
+
+@keyframes monitorBreathe {
+    0% {
+        box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.05);
+    }
+
+    100% {
+        box-shadow: inset 0 0 35px var(--neon-dim);
+    }
 }
 
 .matrix-background {
@@ -152,6 +163,34 @@ button,
 
 .terminal-footer {
     margin-top: 15px;
+}
+
+.exploit-danger-btn {
+    width: 90%;
+    margin: 10px auto;
+    background: #ff0055 !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+    font-family: 'VT323', monospace;
+    font-size: 1.5rem;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-shadow: 0 0 5px #fff;
+    box-shadow: 0 0 20px #ff0055;
+    animation: alertBlink 0.4s infinite alternate;
+}
+
+@keyframes alertBlink {
+    0% {
+        opacity: 0.3;
+        filter: brightness(0.5);
+    }
+
+    100% {
+        opacity: 1;
+        filter: brightness(1.2);
+    }
 }
 
 .ad-wrapper {
@@ -261,9 +300,26 @@ button,
 }
 
 .monitor-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
     margin: auto;
     margin-top: 15px !important;
     margin-bottom: 15px !important;
+}
+
+.terminal-wire {
+    height: 2px;
+    background: #111;
+    box-shadow: none;
+    transition: width 0.4s ease-out, background 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.terminal-wire.powered {
+    background: var(--neon-bright);
+    box-shadow: 0 0 10px var(--neon-bright);
 }
 
 .node-btn {
@@ -574,6 +630,166 @@ button,
     }
 }
 
+
+#hacker-lvl {
+    color: var(--neon-bright);
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--neon-dim);
+}
+
+#lvl-exp {
+    color: var(--text-accent);
+}
+
+.lvl-progress-container {
+    width: 90%;
+    height: 1.2vh;
+    min-height: 6px;
+    max-height: 12px;
+    background: #050a06;
+    border: 2px solid var(--neon-bright);
+    border-radius: 4px;
+    margin: 8px auto;
+    overflow: hidden;
+    box-shadow: 0 0 10px var(--neon-dim), inset 0 0 5px #000;
+}
+
+.lvl-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--neon-bright);
+    box-shadow: 0 0 4px var(--neon-bright), 0 0 10px var(--neon-bright);
+    transition: width 0.1s ease-out;
+}
+
+.skills-section {
+    margin-top: 15px;
+    padding-top: 5px;
+    background: var(--bg-shop);
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.skill-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 5px;
+    background: var(--bg-item);
+    border: 2px solid var(--neon-bright);
+    color: var(--neon-bright);
+    box-shadow: 0 0 8px var(--neon-bright);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 100%;
+}
+
+.skill-btn .skill-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.skill-btn .skill-status {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    color: var(--text-accent);
+}
+
+.skill-btn:not(.locked):hover {
+    background: var(--neon-bright);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-bright);
+}
+
+.skill-btn.locked {
+    background: #0d0d0d;
+    border-color: #222;
+    color: #444;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+
+.skill-btn.locked .skill-status {
+    color: #555;
+}
+
+.skill-btn.active-buff {
+    animation: skillPulse 1s infinite alternate;
+    background: var(--neon-dim) !important;
+    text-shadow: 0 0 5px var(--neon-bright);
+}
+
+@keyframes skillPulse {
+    0% {
+        box-shadow: 0 0 5px var(--neon-bright);
+        border-color: var(--text-accent) !important;
+    }
+
+    100% {
+        box-shadow: 0 0 20px var(--neon-bright);
+        border-color: var(--neon-bright) !important;
+    }
+}
+
+.skill-btn.cooldown {
+    background: #1a1a1a !important;
+    border-color: #ffaa0033 !important;
+    color: #ffaa0088 !important;
+    cursor: not-allowed;
+}
+
+@keyframes fadeNotify {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    10% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+.tab-content-animate {
+    animation: terminalReload 0.25s ease-out forwards !important;
+}
+
+@keyframes terminalReload {
+    0% {
+        opacity: 0;
+        transform: translateY(4px);
+        filter: brightness(2.5);
+    }
+
+    50% {
+        filter: brightness(1.3);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: brightness(1);
+    }
+}
+
+
 @media (min-width: 768px) and (orientation: landscape) {
     .game-container {
         flex-direction: row;
@@ -618,8 +834,8 @@ button,
     }
 
     .monitor-wrapper {
-        margin-top: 5px !important;
-        margin-bottom: 5px !important;
+        margin-top: 3px !important;
+        margin-bottom: 3px !important;
     }
 
     .crypto-balance {
@@ -633,6 +849,7 @@ button,
     .terminal-header,
     .terminal-footer {
         font-size: 1.1rem;
+        margin-bottom: 2px;
     }
 
     .node-btn {
@@ -662,6 +879,12 @@ button,
         padding: 10px;
     }
 
+    .skills-section {
+        margin-top: 2px !important;
+        padding-top: 0px !important;
+        background: none !important;
+    }
+
     .tabs-menu {
         margin-bottom: 10px;
         padding-bottom: 5px;
@@ -674,7 +897,9 @@ button,
 
     .shop-header {
         font-size: 1.1rem;
-        margin-bottom: 5px;
+        margin-bottom: 2px !important;
+        margin-top: 2px !important;
+        color: var(--neon-bright);
     }
 
     .shop-item {
@@ -698,5 +923,142 @@ button,
     .theme-btn {
         font-size: 0.8rem;
         padding: 4px 2px;
+    }
+}
+
+@media (max-width: 767px) {
+    .game-container {
+        flex-direction: column !important;
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+        overflow: hidden !important;
+    }
+
+    .click-zone {
+        flex: 0 0 52% !important;
+        width: 100% !important;
+        border-bottom: 2px solid var(--neon-dim) !important;
+        border-right: none !important;
+        padding: 6px 12px !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        overflow: hidden !important;
+        box-sizing: border-box;
+    }
+
+    .terminal-header {
+        font-size: 0.95rem !important;
+        margin-bottom: 1px !important;
+    }
+
+    .lvl-progress-container {
+        height: 7px !important;
+        margin: 2px auto !important;
+    }
+
+    .crypto-balance {
+        font-size: 1.6rem !important;
+        margin: 1px 0 !important;
+    }
+
+    .income-speed {
+        font-size: 0.95rem !important;
+        margin-bottom: 1px !important;
+    }
+
+    .node-btn {
+        width: 28vmin !important;
+        height: 28vmin !important;
+        max-width: 120px !important;
+        max-height: 120px !important;
+    }
+
+    .node-text {
+        font-size: 0.9rem !important;
+    }
+
+    .terminal-wire {
+        width: 15px !important;
+    }
+
+    .exploit-danger-btn,
+    .ad-btn,
+    #prestige-btn {
+        font-size: 1rem !important;
+        padding: 4px 6px !important;
+        margin: 2px auto !important;
+        width: 95% !important;
+        line-height: 1.2 !important;
+    }
+
+    .shop-zone {
+        flex: 0 0 48% !important;
+        width: 100% !important;
+        padding: 8px 12px !important;
+        overflow-y: auto !important;
+        box-sizing: border-box;
+        background: rgba(0, 5, 0, 0.95) !important;
+    }
+
+    .skills-section {
+        margin-top: 2px !important;
+        padding-top: 0px !important;
+        background: none !important;
+    }
+
+    .shop-header {
+        font-size: 1.1rem !important;
+        margin-top: 2px !important;
+        margin-bottom: 2px !important;
+        color: var(--neon-bright);
+    }
+
+    .tabs-menu {
+        margin-bottom: 6px !important;
+        gap: 6px !important;
+    }
+
+    .tab-btn {
+        font-size: 1rem !important;
+        padding: 4px !important;
+    }
+
+    .upgrades-list {
+        gap: 4px !important;
+    }
+
+    .upgrade-item {
+        padding: 5px 8px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .skills-grid {
+        gap: 5px !important;
+        margin-top: 2px !important;
+    }
+
+    .skill-btn {
+        padding: 4px 2px !important;
+    }
+
+    .skill-btn .skill-name {
+        font-size: 0.85rem !important;
+    }
+
+    .skill-btn .skill-status {
+        font-size: 0.7rem !important;
+    }
+
+    .themes-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 5px !important;
+        margin-top: 2px !important;
+    }
+
+    .theme-btn {
+        font-size: 0.8rem !important;
+        padding: 4px 1px !important;
     }
 }

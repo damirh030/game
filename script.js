@@ -11,6 +11,12 @@ let gameData = {
     totalClicks: 0,
     chips: 0,
     lastSaveTime: Date.now(),
+    level: 1,
+    export: 0,
+    skills: {
+        overclock: { unlocked: false, active: false, cooldown: false },
+        ddos: { unlocked: false, active: false, cooldown: false }
+    },
     upgrades: {
         mouse: { count: 0, baseCost: 80, costMultiplier: 1.15, cpcBonus: 1, cpsBonus: 0 },
         gpu: { count: 0, baseCost: 150, costMultiplier: 1.15, cpcBonus: 0, cpsBonus: 2 },
@@ -61,6 +67,13 @@ function switchTab(tabName) {
     } else {
         document.getElementById('tab-shop-btn').classList.remove('active');
         document.getElementById('tab-attacks-btn').classList.add('active');
+    }
+
+    const shopZone = document.querySelector('.shop-zone');
+    if (shopZone) {
+        shopZone.classList.remove('tab-content-animate');
+        void shopZone.offsetWidth;
+        shopZone.classList.add('tab-content-animate');
     }
 }
 
@@ -176,7 +189,7 @@ const ranks = [
 ];
 
 const systemLogs = [
-    "INITIALIZING EXPLOIT BUFFER...", "CONNECTING TO PROXY_NODE_4...", 
+    "INITIALIZING EXPLOIT BUFFER...", "CONNECTING TO PROXY_NODE_4...",
     "OVERRIDING SECURITY PROTOCOL...", "INJECTING PACKET TO PORT 80...",
     "BRUTEFORCING ENCRYPTION KEY...", "BYPASSING FIREWALL... SUCCESS",
     "DOWNLOADING DATABASE MANIFEST...", "CLEANING UP SYSTEM LOGS...",
@@ -194,14 +207,14 @@ const prestigeBtn = document.getElementById('prestige-btn');
 const pendingChipsDisplay = document.getElementById('pending-chips');
 
 
-window.onload = function() {
+window.onload = function () {
     if (typeof YaGames !== 'undefined') {
         YaGames.init().then(ysdk => {
             console.log('Яндекс SDK готов.');
             ysdkInstance = ysdk;
             currentLang = ysdk.environment.i18n.lang;
             console.log('Язык интерфейса Яндекса:', currentLang);
-            
+
             return ysdk.getPlayer({ scopes: false });
         }).then(player => {
             playerInstance = player;
@@ -209,6 +222,21 @@ window.onload = function() {
         }).then(data => {
             if (data && data.gameData) {
                 gameData = data.gameData;
+            }
+
+            if (gameData.level === undefined || isNaN(gameData.level)) {
+                gameData.level = 1;
+            }
+
+            if (gameData.exp === undefined || isNaN(gameData.exp)) {
+                gameData.exp = 0;
+            }
+
+            if (!gameData.skills) {
+                gameData.skills = {
+                    overclock: { unlocked: false, active: false, cooldown: false },
+                    ddos: { unlocked: false, active: false, cooldown: false }
+                };
             }
             initGame();
         }).catch(err => {
@@ -227,7 +255,22 @@ function loadLocalData() {
     if (local) {
         const parsed = JSON.parse(local);
         gameData = Object.assign(gameData, parsed);
-    } 
+    }
+
+    if (gameData.level === undefined || isNaN(gameData.level)) {
+        gameData.level = 1;
+    }
+
+    if (gameData.exp === undefined || isNaN(gameData.exp)) {
+        gameData.exp = 0;
+    }
+
+    if (!gameData.skills) {
+        gameData.skills = {
+            overclock: { unlocked: false, active: false, cooldown: false },
+            ddos: { unlocked: false, active: false, cooldown: false }
+        };
+    }
 }
 
 function initGame() {
@@ -237,6 +280,7 @@ function initGame() {
     applyTheme(gameData.currentTheme || 'matrix');
     updateThemeButtons();
     setInterval(generateBackgroundLog, 1200);
+    checkSkillsUnlock();
 }
 
 function saveGame() {
@@ -276,16 +320,31 @@ function getPrestigeMultiplier() {
 }
 
 function getTotalClickPower() {
-    return Math.floor(gameData.clickPower * getPrestigeMultiplier());
+    let power = gameData.clickPower || 1;
+
+    if (gameData.skills && gameData.skills.overclock && gameData.skills.overclock.active === true) {
+        power = power * 2;
+    }
+    const prestigeMult = (typeof getPrestigeMultiplier === 'function') ? getPrestigeMultiplier() : 1;
+
+    return Math.floor(power * prestigeMult);
 }
 
 function getTotalPassiveIncome() {
+    let baseIncome = gameData.passiveIncome;
+    if (gameData.skills && gameData.skills.ddos && gameData.skills.ddos.active) {
+        baseIncome *= 3;
+    }
     return Math.floor(gameData.passiveIncome * getPrestigeMultiplier());
 }
 
 function getPendingChips() {
     if (gameData.coins < 5000) return 0;
     return Math.floor(Math.sqrt(gameData.coins / 5000));
+}
+
+function getRequiredExp() {
+    return gameData.level * 50;
 }
 
 function updateUI() {
@@ -324,24 +383,141 @@ function updateUI() {
     } else {
         prestigeBtn.style.display = "none";
     }
+
+    if (document.getElementById('hacker-lvl')) {
+        document.getElementById('hacker-lvl').textContent = `LVL: ${gameData.level}`;
+    }
+    if (document.getElementById('lvl-exp')) {
+        document.getElementById('lvl-exp').textContent = `EXP: ${gameData.exp}/${getRequiredExp()}`;
+    }
+
+    const progressBar = document.getElementById('lvl-progress-bar');
+    if (progressBar) {
+        const percentage = (gameData.exp / getRequiredExp()) * 100;
+        progressBar.style.width = `${percentage}%`;
+    }
+
+    const oBtn = document.getElementById('skill-overclock');
+    const dBtn = document.getElementById('skill-ddos');
+    if (oBtn && dBtn && gameData.skills) {
+
+        if (!gameData.skills.overclock.unlocked) { oBtn.className = "buy-btn skill-btn locked"; oBtn.querySelector('.skill-status').textContent = "[БЛОК: LVL 3]"; }
+        else if (gameData.skills.overclock.active) { oBtn.className = "buy-btn skill-btn active-buff"; oBtn.querySelector('.skill-status').textContent = "[АКТИВЕН...]"; }
+        else if (gameData.skills.overclock.cooldown) { oBtn.className = "buy-btn skill-btn cooldown"; oBtn.querySelector('.skill-status').textContent = "[ПЕРЕЗАГР...]"; }
+        else { oBtn.className = "buy-btn skill-btn"; oBtn.querySelector('.skill-status').textContent = "[ГОТОВ]"; }
+
+
+        if (!gameData.skills.ddos.unlocked) { dBtn.className = "buy-btn skill-btn locked"; dBtn.querySelector('.skill-status').textContent = "[БЛОК: LVL 5]"; }
+        else if (gameData.skills.ddos.active) { dBtn.className = "buy-btn skill-btn active-buff"; dBtn.querySelector('.skill-status').textContent = "[АТАКА...]"; }
+        else if (gameData.skills.ddos.cooldown) { dBtn.className = "buy-btn skill-btn cooldown"; dBtn.querySelector('.skill-status').textContent = "[ПЕРЕЗАГР...]"; }
+        else { dBtn.className = "buy-btn skill-btn"; dBtn.querySelector('.skill-status').textContent = "[ГОТОВ]"; }
+    }
+
+    const wireL = document.getElementById('wire-left');
+    const wireR = document.getElementById('wire-right');
+    if (wireL) {
+        const gpuCount = gameData.upgrades.gpu.count || 0;
+        if (gpuCount > 0) {
+            const newWidth = Math.min(40 + (gpuCount * 15), 200);
+            wireL.style.width = `${newWidth}px`;
+            wireL.style.background = 'var(--neon-bright)';
+            wireL.style.boxShadow = '0 0 10px var(--neon-bright)';
+        } else {
+            wireL.style.width = '40px';
+            wireL.style.background = '#111';
+            wireL.style.boxShadow = 'none';
+        }
+    }
+
+    if (wireR) {
+        const botnetCount = gameData.upgrades.botnet.count || 0;
+        if (botnetCount > 0) {
+            const newWidth = Math.min(40 + (botnetCount * 15), 200);
+            wireR.style.width = `${newWidth}px`;
+            wireR.style.background = 'var(--neon-bright)';
+            wireR.style.boxShadow = '0 0 10px var(--neon-bright)';
+        } else {
+            wireR.style.width = '40px';
+            wireR.style.background = '#111';
+            wireR.style.boxShadow = 'none';
+        }
+    }
+}
+
+function spawnExploit() {
+    const exploitBtn = document.getElementById('exploit-btn');
+    const prestigeBtn = document.getElementById('prestige-btn');
+    const adWrapper = document.querySelector('.ad-wrapper');
+
+    if (!exploitBtn) return;
+    exploitBtn.style.setProperty('display', 'block', 'important');
+
+    if (typeof showCenterNotification === 'function') {
+        showCenterNotification("[ ! ] ОБНАРУЖЕНА УЯЗВИМОСТЬ В СЕТИ БАНКА [ ! ]", "#ff0055");
+    }
+    if (typeof playHackerSound === 'function') {
+        playHackerSound('levelup');
+    }
+    if (adWrapper) {
+        adWrapper.style.setProperty('display', 'none', 'important');
+    }
+
+    if (prestigeBtn) {
+        prestigeBtn.style.setProperty('display', 'none', 'important');
+    }
+
+    setTimeout(() => {
+        const currentExploitBtn = document.getElementById('exploit-btn');
+        if (currentExploitBtn) {
+            currentExploitBtn.style.setProperty('display', 'none', 'important');
+        }
+        if (currentAdWrapper = document.querySelector('.ad-wrapper')) {
+            currentAdWrapper.style.setProperty('display', 'block', 'important');
+        }
+        if (typeof updateUI === 'function') updateUI();
+    }, 7000);
+}
+
+function triggerExploitClick() {
+    const power = (typeof getTotalClickPower === 'function') ? getTotalClickPower() : (gameData.clickPower || 1);
+    const bonus = power * 5;
+    gameData.coins += bonus;
+
+    if (typeof showCenterNotification === 'function') {
+        showCenterNotification(`[ ВЗЛОМ: +${bonus} BTC ]`, "#ff0055");
+    }
+    if (typeof playHackerSound === 'function') playHackerSound('click');
+    if (typeof updateUI === 'function') updateUI();
 }
 
 
 function startPassiveIncome() {
-    let saveCounter = 0;
     setInterval(() => {
-        gameData.coins += getTotalPassiveIncome();
-        updateUI();
-
-        saveCounter++;
-        if (saveCounter >= 10) {
-            saveGame();
-            saveCounter = 0;
+        const income = getTotalPassiveIncome();
+        if (income > 0) {
+            gameData.coins += income / 10;
+            updateUI();
         }
-    }, 1000);
+    }, 100);
 }
 
 clickBtn.addEventListener('click', (e) => {
+    if (e.target && typeof e.target.blur === 'function') {
+        e.target.blur();
+    }
+
+    playHackerSound('click');
+    gameData.exp++;
+    const expNeeded = getRequiredExp();
+
+    if (gameData.exp >= expNeeded) {
+        gameData.exp = 0;
+        gameData.level++;
+        playHackerSound('levelup')
+        showCenterNotification(`[ПОВЫШЕНИЕ УРОВНЯ: ВЫ LVL ${gameData.level}]`, "#ffff00");
+        checkSkillsUnlock();
+    }
+
     const power = getTotalClickPower();
     gameData.coins += power;
     gameData.totalClicks++;
@@ -424,13 +600,49 @@ function grantAdReward() {
     showCenterNotification(`[ СИСТЕМА УСКОРЕНА: +${bonusCoins} BTC ]`, "#ffaa00");
 }
 
-function showCenterNotification(text, shadowColor) {
-    const alertBox = document.createElement('div');
-    alertBox.className = 'ad-floating-text';
-    alertBox.style.textShadow = `0 0 10px ${shadowColor}, 0 0 20px ${shadowColor}`;
-    alertBox.textContent = text;
-    document.body.appendChild(alertBox);
-    setTimeout(() => alertBox.remove(), 2500);
+function showCenterNotification(text, color = "var(--neon-bright)") {
+    if (text.includes("ДОСТИЖЕНИЕ") || text.includes("РАЗБЛОКИРОВАН")) {
+        playHackerSound('achievement');
+    }
+
+    let container = document.getElementById('notification-stack');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-stack';
+        container.style.position = 'fixed';
+        container.style.top = '25%';
+        container.style.left = '50%';
+        container.style.transform = 'translateX(-50%)';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '10px';
+        container.style.zIndex = '9999';
+        container.style.pointerEvents = 'none';
+        document.body.appendChild(container);
+    }
+
+    const notification = document.createElement('div');
+    notification.style.fontFamily = "'VT323', monospace";
+    notification.style.fontSize = '1.6rem';
+    notification.style.color = color;
+    notification.style.background = 'rgba(0, 5, 0, 0.9)';
+    notification.style.border = `2px solid ${color}`;
+    notification.style.padding = '8px 20px';
+    notification.style.borderRadius = '4px';
+    notification.style.textShadow = `0 0 8px ${color}`;
+    notification.style.boxShadow = `0 0 15px rgba(0,0,0,0.5)`;
+    notification.style.textAlign = 'center';
+    notification.style.whiteSpace = 'nowrap';
+    notification.style.animation = 'fadeNotify 3s forwards';
+
+    notification.textContent = text;
+    container.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+        if (container.children.length === 0) {
+            container.remove();
+        }
+    }, 3000);
 }
 
 
@@ -440,7 +652,7 @@ function generateBackgroundLog() {
 
     const line = document.createElement('div');
     line.className = 'matrix-line';
-    
+
     const hexAddress = "0x" + Math.floor(Math.random() * 65535).toString(16).toUpperCase();
     const randomLog = systemLogs[Math.floor(Math.random() * systemLogs.length)];
     line.textContent = `[${hexAddress}] ${randomLog}`;
@@ -453,3 +665,123 @@ function generateBackgroundLog() {
 }
 
 document.addEventListener('contextmenu', event => event.preventDefault());
+
+function checkSkillsUnlock() {
+    if (!gameData.skills) return;
+    if (gameData.level >= 3 && !gameData.skills.overclock.unlocked) {
+        gameData.skills.overclock.unlocked = true;
+        showCenterNotification("[ РАЗБЛОКИРОВАН НАВЫК: ОВЕРКЛОКИНГ (LVL 3) ]", "#00ffff");
+    }
+    if (gameData.level >= 5 && !gameData.skills.ddos.unlocked) {
+        gameData.skills.ddos.unlocked = true;
+        showCenterNotification("[ РАЗБЛОКИРОВАН НАВЫК: DDOS-ШТОРМ (LVL 5) ]", "#00ffff");
+    }
+    updateUI();
+}
+
+function triggerOverclock() {
+    if (!gameData.skills || !gameData.skills.overclock.unlocked) return;
+    if (gameData.skills.overclock.active || gameData.skills.overclock.cooldown) return;
+    gameData.skills.overclock.active = true;
+    gameData.skills.overclock.cooldown = true;
+    updateUI();
+
+    if (typeof showCenterNotification === 'function') {
+        showCenterNotification("[АКТИВИРОВАН ОВЕРКЛОКИНГ: КЛИК Х2 НА 15 СЕКУНД!]", "#00ffff");
+    }
+    if (typeof playHackerSound === 'function') playHackerSound('achievement');
+
+    setTimeout(() => {
+        gameData.skills.overclock.active = false;
+
+        updateUI();
+
+        if (typeof showCenterNotification === 'function') {
+            showCenterNotification("[ДЕЙСТВИЕ ОВЕРКЛОКИНГА ЗАВЕРШЕНО]", "#ffaa00");
+        }
+    }, 15000);
+
+    setTimeout(() => {
+        gameData.skills.overclock.cooldown = false;
+
+        updateUI();
+
+        if (typeof showCenterNotification === 'function') {
+            showCenterNotification("[ОВЕРКЛОКИНГ ГОТОВ К ИСПОЛЬЗОВАНИЮ]", "#00ff66");
+        }
+    }, 60000);
+}
+
+function triggerDdos() {
+    if (!gameData.skills || !gameData.skills.ddos.unlocked || gameData.skills.ddos.active || gameData.skills.ddos.cooldown) return;
+    gameData.skills.ddos.active = true;
+    gameData.skills.ddos.cooldown = true;
+    updateUI();
+    showCenterNotification("[ЗАПУЩЕН DDOS-ШТОРМ: ПАССИВНЫЙ ДОХОД Х3 НА 20 СЕКУНД!]", "#00ffff");
+    setTimeout(() => { gameData.skills.ddos.active = false; updateUI(); showCenterNotification("[DDOS-ШТОРМ СТИХ]", "#ffaa00"); }, 20000);
+    setTimeout(() => { gameData.skills.ddos.cooldown = false; updateUI(); showCenterNotification("[DDOS-ШТОРМ ГОТОВ]", "#00ff66"); }, 90000);
+}
+
+let globalAudioCtx = null;
+
+function playHackerSound(type) {
+    try {
+
+        if (!globalAudioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            globalAudioCtx = new AudioContextClass();
+        }
+
+        if (globalAudioCtx.state === 'suspended') {
+            globalAudioCtx.resume();
+        }
+        const osc = globalAudioCtx.createOscillator();
+        const gain = globalAudioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(globalAudioCtx.destination);
+
+        if (type === 'click') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(850, globalAudioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.03, globalAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.03);
+
+            osc.start(globalAudioCtx.currentTime);
+            osc.stop(globalAudioCtx.currentTime + 0.03);
+
+        } else if (type === 'levelup') {
+            osc.type = 'square';
+
+            osc.frequency.setValueAtTime(300, globalAudioCtx.currentTime);
+            osc.frequency.setValueAtTime(450, globalAudioCtx.currentTime + 0.06);
+            osc.frequency.setValueAtTime(600, globalAudioCtx.currentTime + 0.12);
+            osc.frequency.setValueAtTime(800, globalAudioCtx.currentTime + 0.18);
+
+            gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.25);
+
+            osc.start(globalAudioCtx.currentTime);
+            osc.stop(globalAudioCtx.currentTime + 0.25);
+        } else if (type === 'achievement') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(700, globalAudioCtx.currentTime);
+            osc.frequency.setValueAtTime(1050, globalAudioCtx.currentTime + 0.07);
+            gain.gain.setValueAtTime(0.06, globalAudioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.22);
+
+            osc.start(globalAudioCtx.currentTime);
+            osc.stop(globalAudioCtx.currentTime + 0.22);
+        }
+    } catch (e) {
+        console.warn("Аудио временно недоступно:", e);
+    }
+}
+
+setInterval(() => {
+    if (Math.random() > 0.5) {
+        spawnExploit();
+    }
+}, 180000);
