@@ -945,7 +945,7 @@ button,
     }
 
     .click-zone {
-        flex: 0 0 45vh !important;
+        flex: 0 0 45% !important;
         width: 100% !important;
         border-bottom: 2px solid var(--neon-dim) !important;
         border-right: none !important;
@@ -961,6 +961,14 @@ button,
     .terminal-header {
         font-size: 0.95rem !important;
         margin-bottom: 1px !important;
+    }
+
+    .terminal-footer {
+        position: absolute !important;
+        bottom: 8px !important;
+        left: 12px !important;
+        z-index: 10 !important;
+        font-size: 1.1rem !important;
     }
 
     .lvl-progress-container {
@@ -1004,7 +1012,7 @@ button,
     }
 
     .shop-zone {
-        flex: 1 !important;
+        flex: 0 0 55% !important;
         width: 100% !important;
         padding: 8px 12px !important;
         overflow: hidden !important;
@@ -1015,7 +1023,7 @@ button,
     .tabs-scroll-area {
         flex: 1 !important;
         overflow-y: scroll !important;
-        padding-bottom: 80px !important;
+        padding-bottom: 40px !important;
         -webkit-overflow-scrolling: touch !important;
     }
 
