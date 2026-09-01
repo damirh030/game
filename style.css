@@ -505,7 +505,8 @@ button,
     font-family: 'VT323', monospace;
 }
 
-.item-name, .item-desc {
+.item-name,
+.item-desc {
     font-family: 'VT323', monospace;
 }
 
@@ -939,12 +940,12 @@ button,
     .game-container {
         flex-direction: column !important;
         height: 100svh !important;
-        height: -webkit-fill-available !important;
         overflow: hidden !important;
+        position: relative !important;
     }
 
     .click-zone {
-        flex: 0 0 50% !important;
+        flex: 0 0 45vh !important;
         width: 100% !important;
         border-bottom: 2px solid var(--neon-dim) !important;
         border-right: none !important;
@@ -1003,7 +1004,7 @@ button,
     }
 
     .shop-zone {
-        flex: 0 0 50% !important;
+        flex: 1 !important;
         width: 100% !important;
         padding: 8px 12px !important;
         overflow: hidden !important;
@@ -1013,9 +1014,17 @@ button,
 
     .tabs-scroll-area {
         flex: 1 !important;
-        overflow-y: auto !important;
-        padding-bottom: 60px !important;
-        -webkit-overflow-scrolling: touch;
+        overflow-y: scroll !important;
+        padding-bottom: 80px !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .shop-list,
+    .skills-section,
+    .theme-section {
+        flex-shrink: 0 !important;
+        display: block !important;
+        width: 100% !important;
     }
 
     .skills-section {
@@ -1071,6 +1080,7 @@ button,
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 6px !important;
         margin-top: 5px !important;
+        width: 100% !important;
     }
 
     .theme-btn {
