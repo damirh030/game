@@ -502,6 +502,15 @@ button,
     justify-content: space-between;
     height: 100%;
     overflow: hidden;
+    font-family: 'VT323', monospace;
+}
+
+.item-name, .item-desc {
+    font-family: 'VT323', monospace;
+}
+
+.hack-btn {
+    font-family: 'VT323', monospace;
 }
 
 .tabs-scroll-area {
@@ -935,7 +944,7 @@ button,
     }
 
     .click-zone {
-        flex: 0 0 52% !important;
+        flex: 0 0 50% !important;
         width: 100% !important;
         border-bottom: 2px solid var(--neon-dim) !important;
         border-right: none !important;
@@ -994,10 +1003,10 @@ button,
     }
 
     .shop-zone {
-        flex: 0 0 48% !important;
+        flex: 0 0 50% !important;
         width: 100% !important;
         padding: 8px 12px !important;
-        overflow-y: auto !important;
+        overflow: hidden !important;
         box-sizing: border-box;
         background: rgba(0, 5, 0, 0.95) !important;
     }
@@ -1005,7 +1014,7 @@ button,
     .tabs-scroll-area {
         flex: 1 !important;
         overflow-y: auto !important;
-        padding-bottom: 30px !important;
+        padding-bottom: 60px !important;
         -webkit-overflow-scrolling: touch;
     }
 
@@ -1059,16 +1068,14 @@ button,
     }
 
     .themes-grid {
-        display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        margin-top: 10px !important;
-        width: 100%;
+        gap: 6px !important;
+        margin-top: 5px !important;
     }
 
     .theme-btn {
         font-size: 0.8rem !important;
-        padding: 8px 4px !important;
+        padding: 6px 2px !important;
         white-space: nowrap !important;
     }
 }
