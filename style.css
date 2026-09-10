@@ -1080,7 +1080,7 @@ button,
     body,
     .main-container,
     .main-screen {
-        padding-bottom: 90px !important;
+        padding-bottom: 40px !important;
         box-sizing: border-box !important;
     }
 
@@ -1250,9 +1250,13 @@ button,
     .shop-list,
     #tab-shop,
     #tab-attacks {
-        overflow-y: auto !important;
+        overflow-y: scroll !important;
         overflow-x: hidden !important;
+        overscroll-behavior: contain !important;
         -webkit-overflow-scrolling: touch !important;
         touch-action: pan-y !important;
+        height: auto;
+        max-height: 400px;
     }
+    
 }
