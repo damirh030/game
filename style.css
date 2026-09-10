@@ -1080,7 +1080,7 @@ button,
     body,
     .main-container,
     .main-screen {
-        padding-bottom: 40px !important;
+        padding-bottom: 30px !important;
         box-sizing: border-box !important;
     }
 
@@ -1163,6 +1163,13 @@ button,
         overflow-y: auto !important;
         box-sizing: border-box;
         background: rgba(0, 5, 0, 0.95) !important;
+        display: block;
+        height: auto !important;
+        max-height: 55vh !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        box-sizing: border-box;
     }
 
     .skills-section {
@@ -1250,13 +1257,9 @@ button,
     .shop-list,
     #tab-shop,
     #tab-attacks {
-        overflow-y: scroll !important;
-        overflow-x: hidden !important;
-        overscroll-behavior: contain !important;
-        -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-y !important;
-        height: auto;
-        max-height: 400px;
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
     }
     
 }
