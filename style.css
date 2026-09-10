@@ -122,7 +122,7 @@ button,
     top: 60% !important;
     left: 45% !important;
     margin-left: 130px !important;
-    transform: translateY(-50%) !important; 
+    transform: translateY(-50%) !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 25px !important;
@@ -1076,6 +1076,20 @@ button,
 }
 
 @media (max-width: 767px) {
+
+    body,
+    .main-container,
+    .main-screen {
+        padding-bottom: 90px !important;
+        box-sizing: border-box !important;
+    }
+
+    html,
+    body {
+        height: 100% !important;
+        min-height: -webkit-fill-available !important;
+    }
+
     .game-container {
         flex-direction: column !important;
         height: 100vh !important;
@@ -1210,24 +1224,35 @@ button,
         font-size: 0.8rem !important;
         padding: 4px 1px !important;
     }
+
     .sidebar-bonus-container {
-        /* Обнуляем ПК-отступы и переключаемся на безопасные мобильные проценты */
         margin-left: 0 !important;
-        left: 80% !important; 
-        top: 300px !important; /* Центрируем по высоте кликера на смартфонах */
+        left: 80% !important;
+        top: 260px !important;
     }
-    
-    /* Делаем сами кнопки чуть компактнее на телефонах, чтобы они 100% влезли */
+
     .bonus-sidebar-btn {
-        width: 60px !important;
-        height: 60px !important;
+        width: 55px !important;
+        height: 55px !important;
         padding: 4px !important;
     }
+
     .bonus-sidebar-btn .bonus-text {
-        font-size: 0.6rem !important;
+        font-size: 0.5rem !important;
     }
 
     .bonus-sidebar-btn .bonus-icon {
-    font-size: 1.2rem;
-}
+        font-size: 1rem;
+    }
+
+    .shop-zone,
+    .tabs-scroll-area,
+    .shop-list,
+    #tab-shop,
+    #tab-attacks {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+    }
 }

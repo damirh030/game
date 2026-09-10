@@ -743,25 +743,33 @@ function showCenterNotification(text, color = "var(--neon-bright)") {
         container.style.gap = '10px';
         container.style.zIndex = '9999';
         container.style.pointerEvents = 'none';
+        container.style.width = '90vw';
+        container.style.maxWidth = '400px';
+        
         document.body.appendChild(container);
     }
 
     const notification = document.createElement('div');
     notification.style.fontFamily = "'VT323', monospace";
-    notification.style.fontSize = '1.6rem';
+    notification.style.fontSize = '1.3rem';
     notification.style.color = color;
     notification.style.background = 'rgba(0, 5, 0, 0.9)';
     notification.style.border = `2px solid ${color}`;
-    notification.style.padding = '8px 20px';
+    notification.style.padding = '8px 15px';
     notification.style.borderRadius = '4px';
     notification.style.textShadow = `0 0 8px ${color}`;
     notification.style.boxShadow = `0 0 15px rgba(0,0,0,0.5)`;
     notification.style.textAlign = 'center';
-    notification.style.whiteSpace = 'nowrap';
+    notification.style.whiteSpace = 'normal';
+    notification.style.wordBreak = 'break-word';
+    notification.style.width = '100%';
+    notification.style.boxSizing = 'border-box';
+    
     notification.style.animation = 'fadeNotify 3s forwards';
 
     notification.textContent = text;
     container.appendChild(notification);
+    
     setTimeout(() => {
         notification.remove();
         if (container.children.length === 0) {
