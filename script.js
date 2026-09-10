@@ -11,6 +11,12 @@ let gameData = {
     totalClicks: 0,
     chips: 0,
     lastSaveTime: Date.now(),
+    currentEnergy: 1000,
+    maxEnergy: 1000,
+    energyLvl: 1,
+    energyRegenLvl: 1,
+    infiniteEnergyActive: false,
+    lastEnergyAdTime: 0,
     level: 1,
     export: 0,
     skills: {
@@ -20,7 +26,9 @@ let gameData = {
     upgrades: {
         mouse: { count: 0, baseCost: 80, costMultiplier: 1.15, cpcBonus: 1, cpsBonus: 0 },
         gpu: { count: 0, baseCost: 150, costMultiplier: 1.15, cpcBonus: 0, cpsBonus: 2 },
-        botnet: { count: 0, baseCost: 450, costMultiplier: 1.15, cpcBonus: 0, cpsBonus: 15 }
+        botnet: { count: 0, baseCost: 450, costMultiplier: 1.15, cpcBonus: 0, cpsBonus: 15 },
+        energyMax: { count: 0, baseCost: 200, costMultiplier: 1.25, cpcBonus: 0, cpsBonus: 0 },
+        energyRegen: { count: 0, baseCost: 250, costMultiplier: 1.3, cpcBonus: 0, cpsBonus: 0 }
     }
 };
 
@@ -59,16 +67,40 @@ const themesConfig = {
 
 
 function switchTab(tabName) {
-    document.getElementById('tab-shop').style.display = tabName === 'shop' ? 'block' : 'none';
-    document.getElementById('tab-attacks').style.display = tabName === 'attacks' ? 'block' : 'none';
+    const tabShop = document.getElementById('tab-shop');
+    const tabAttacks = document.getElementById('tab-attacks');
+    const darknetList = document.getElementById('darknet-list');
+    const attacksList = document.getElementById('attacks-list');
+
     if (tabName === 'shop') {
-        document.getElementById('tab-shop-btn').classList.add('active');
-        document.getElementById('tab-attacks-btn').classList.remove('active');
-    } else {
-        document.getElementById('tab-shop-btn').classList.remove('active');
-        document.getElementById('tab-attacks-btn').classList.add('active');
+        // ВКЛЮЧАЕМ ДАРКНЕТ: показываем магазин, полностью тушим атаки
+        if (tabShop) tabShop.style.setProperty('display', 'block', 'important');
+        if (tabAttacks) tabAttacks.style.setProperty('display', 'none', 'important');
+
+        if (darknetList) darknetList.style.setProperty('display', 'flex', 'important');
+        if (attacksList) attacksList.style.setProperty('display', 'none', 'important');
+    } else if (tabName === 'attacks') {
+        // ВКЛЮЧАЕМ КИБЕРАТАКЫ: скрываем магазин, показываем цели взлома
+        if (tabShop) tabShop.style.setProperty('display', 'none', 'important');
+        if (tabAttacks) tabAttacks.style.setProperty('display', 'block', 'important');
+
+        if (darknetList) darknetList.style.setProperty('display', 'none', 'important');
+        if (attacksList) attacksList.style.setProperty('display', 'flex', 'important');
     }
 
+    // Подсветка кнопок меню табов (Даркнет / Кибератаки)
+    const shopBtn = document.getElementById('tab-shop-btn') || document.querySelector('.tab-btn:first-child');
+    const attacksBtn = document.getElementById('tab-attacks-btn') || document.querySelector('.tab-btn:last-child');
+
+    if (tabName === 'shop') {
+        if (shopBtn) shopBtn.classList.add('active');
+        if (attacksBtn) attacksBtn.classList.remove('active');
+    } else {
+        if (shopBtn) shopBtn.classList.remove('active');
+        if (attacksBtn) attacksBtn.classList.add('active');
+    }
+
+    // Перезапуск анимации терминала
     const shopZone = document.querySelector('.shop-zone');
     if (shopZone) {
         shopZone.classList.remove('tab-content-animate');
@@ -214,6 +246,9 @@ window.onload = function () {
             ysdkInstance = ysdk;
             currentLang = ysdk.environment.i18n.lang;
             console.log('Язык интерфейса Яндекса:', currentLang);
+            if (ysdk.features && ysdk.features.LoadingAPI) {
+                ysdk.features.LoadingAPI.ready();
+            }
 
             return ysdk.getPlayer({ scopes: false });
         }).then(player => {
@@ -237,6 +272,22 @@ window.onload = function () {
                     overclock: { unlocked: false, active: false, cooldown: false },
                     ddos: { unlocked: false, active: false, cooldown: false }
                 };
+            }
+
+            if (gameData.currentEnergy === undefined || isNaN(gameData.currentEnergy)) {
+                gameData.currentEnergy = 1000;
+            }
+            if (gameData.maxEnergy === undefined || isNaN(gameData.maxEnergy)) {
+                gameData.maxEnergy = 1000;
+            }
+            if (gameData.infiniteEnergyActive === undefined) {
+                gameData.infiniteEnergyActive = false;
+            }
+            if (!gameData.upgrades.energyMax) {
+                gameData.upgrades.energyMax = { count: 0, baseCost: 200, costMultiplier: 1.25, cpcBonus: 0, cpsBonus: 0 };
+            }
+            if (!gameData.upgrades.energyRegen) {
+                gameData.upgrades.energyRegen = { count: 0, baseCost: 0, costMultiplier: 1.3, cpcBonus: 0, cpsBonus: 0 };
             }
             initGame();
         }).catch(err => {
@@ -271,9 +322,30 @@ function loadLocalData() {
             ddos: { unlocked: false, active: false, cooldown: false }
         };
     }
+    if (gameData.currentEnergy === undefined || isNaN(gameData.currentEnergy)) {
+        gameData.currentEnergy = 1000;
+    }
+    if (gameData.maxEnergy === undefined || isNaN(gameData.maxEnergy)) {
+        gameData.maxEnergy = 1000;
+    }
+    if (gameData.infiniteEnergyActive === undefined) {
+        gameData.infiniteEnergyActive = false;
+    }
+    if (!gameData.upgrades.energyMax) {
+        gameData.upgrades.energyMax = { count: 0, baseCost: 200, costMultiplier: 1.25, cpcBonus: 0, cpsBonus: 0 };
+    }
+    if (!gameData.upgrades.energyRegen) {
+        gameData.upgrades.energyRegen = { count: 0, baseCost: 250, costMultiplier: 1.3, cpcBonus: 0, cpsBonus: 0 };
+    }
 }
 
 function initGame() {
+    switchTab('shop');
+    if (gameData.currentEnergy === undefined || isNaN(gameData.currentEnergy)) {
+        gameData.currentEnergy = gameData.maxEnergy || 1000;
+        saveGame();
+    }
+
     calculateOfflineIncome();
     updateUI();
     startPassiveIncome();
@@ -338,10 +410,6 @@ function getTotalPassiveIncome() {
     return Math.floor(gameData.passiveIncome * getPrestigeMultiplier());
 }
 
-function getPendingChips() {
-    if (gameData.coins < 5000) return 0;
-    return Math.floor(Math.sqrt(gameData.coins / 5000));
-}
 
 function getRequiredExp() {
     return gameData.level * 50;
@@ -374,14 +442,6 @@ function updateUI() {
         document.querySelector('.node-text').textContent = `<POWER: ${getTotalClickPower()}>`;
     } else {
         document.querySelector('.node-text').textContent = `<RUN_EXPLOIT>`;
-    }
-
-    const pendingChips = getPendingChips();
-    if (pendingChips > 0) {
-        prestigeBtn.style.display = "inline-block";
-        pendingChipsDisplay.textContent = pendingChips;
-    } else {
-        prestigeBtn.style.display = "none";
     }
 
     if (document.getElementById('hacker-lvl')) {
@@ -442,53 +502,69 @@ function updateUI() {
             wireR.style.boxShadow = 'none';
         }
     }
-}
 
-function spawnExploit() {
-    const exploitBtn = document.getElementById('exploit-btn');
-    const prestigeBtn = document.getElementById('prestige-btn');
-    const adWrapper = document.querySelector('.ad-wrapper');
-
-    if (!exploitBtn) return;
-    exploitBtn.style.setProperty('display', 'block', 'important');
-
-    if (typeof showCenterNotification === 'function') {
-        showCenterNotification("[ ! ] ОБНАРУЖЕНА УЯЗВИМОСТЬ В СЕТИ БАНКА [ ! ]", "#ff0055");
-    }
-    if (typeof playHackerSound === 'function') {
-        playHackerSound('levelup');
-    }
-    if (adWrapper) {
-        adWrapper.style.setProperty('display', 'none', 'important');
+    if (gameData.upgrades && gameData.upgrades.energyMax) {
+        gameData.maxEnergy = 1000 + (gameData.upgrades.energyMax.count * 500);
+    } else {
+        gameData.maxEnergy = 1000;
     }
 
-    if (prestigeBtn) {
-        prestigeBtn.style.setProperty('display', 'none', 'important');
-    }
-
-    setTimeout(() => {
-        const currentExploitBtn = document.getElementById('exploit-btn');
-        if (currentExploitBtn) {
-            currentExploitBtn.style.setProperty('display', 'none', 'important');
+    let energyBar = document.getElementById('energy-bar') || document.querySelector('.energy-bar-fill');
+    let energyCountDisp = document.getElementById('energy-count') || document.querySelector('.energy-text');
+    if (energyCountDisp) {
+        if (gameData.infiniteEnergyActive) {
+            energyCountDisp.textContent = "ЭНЕРГИЯ: INF";
+        } else {
+            energyCountDisp.innerHTML = `ЭНЕРГИЯ: ${Math.floor(gameData.currentEnergy)} / ${gameData.maxEnergy}`;
         }
-        if (currentAdWrapper = document.querySelector('.ad-wrapper')) {
-            currentAdWrapper.style.setProperty('display', 'block', 'important');
-        }
-        if (typeof updateUI === 'function') updateUI();
-    }, 7000);
-}
-
-function triggerExploitClick() {
-    const power = (typeof getTotalClickPower === 'function') ? getTotalClickPower() : (gameData.clickPower || 1);
-    const bonus = power * 5;
-    gameData.coins += bonus;
-
-    if (typeof showCenterNotification === 'function') {
-        showCenterNotification(`[ ВЗЛОМ: +${bonus} BTC ]`, "#ff0055");
     }
-    if (typeof playHackerSound === 'function') playHackerSound('click');
-    if (typeof updateUI === 'function') updateUI();
+
+    if (energyBar) {
+        const percentage = (gameData.currentEnergy / gameData.maxEnergy) * 100;
+        energyBar.style.setProperty('width', `${percentage}%`, 'important');
+
+        if (gameData.infiniteEnergyActive) {
+            energyBar.classList.add('infinite-active');
+        } else {
+            energyBar.classList.remove('infinite-active');
+        }
+    }
+
+    const turboBtn = document.querySelector('.turbo-btn');
+    if (turboBtn) {
+        const now = Date.now();
+        const duration = 30000;
+        const cooldownTime = 60000;
+        const timePassed = now - (gameData.lastEnergyAdTime || 0);
+        if (gameData.infiniteEnergyActive && timePassed >= duration) {
+            gameData.infiniteEnergyActive = false;
+            showCenterNotification("[БЕСКОНЕЧНАЯ ЭНЕРГИЯ ЗАВЕРШЕНА]", "#ffaa00");
+            saveGame();
+        }
+
+        if (gameData.infiniteEnergyActive) {
+            const secondsLeft = Math.ceil((duration - timePassed) / 1000);
+            turboBtn.textContent = `⚡ БУСТ АКТИВЕН (${secondsLeft}с)...`;
+            turboBtn.disabled = true;
+        } else if (timePassed < cooldownTime) {
+            const secondsLeft = Math.ceil((cooldownTime - timePassed) / 1000);
+            turboBtn.textContent = `⏳ ПЕРЕЗАГРУЗКА (${secondsLeft}с)`;
+            turboBtn.disabled = true;
+            turboBtn.style.setProperty('background', '#1a0505', 'important');
+            turboBtn.style.setProperty('border-color', '#551111', 'important');
+            turboBtn.style.setProperty('color', '#773333', 'important');
+        } else {
+            turboBtn.textContent = "🎬 БЕСКОНЕЧНАЯ ЭНЕРГИЯ НА 30с (ЗА РЕКЛАМУ)";
+            turboBtn.disabled = false;
+            turboBtn.style.setProperty('background', 'rgba(239, 68, 68, 0.05)', 'important');
+            turboBtn.style.setProperty('border-color', '#ef4444', 'important');
+            turboBtn.style.setProperty('color', '#fca5a5', 'important');
+        }
+    }
 }
+
+
+
 
 
 function startPassiveIncome() {
@@ -496,14 +572,104 @@ function startPassiveIncome() {
         const income = getTotalPassiveIncome();
         if (income > 0) {
             gameData.coins += income / 10;
-            updateUI();
         }
+
+        const regenSpeed = 30 + (gameData.upgrades.energyRegen.count * 15);
+
+        if (gameData.currentEnergy < gameData.maxEnergy && !gameData.infiniteEnergyActive) {
+            gameData.currentEnergy += regenSpeed / 100;
+            if (gameData.currentEnergy > gameData.maxEnergy) {
+                gameData.currentEnergy = gameData.maxEnergy;
+            }
+        }
+        updateUI();
     }, 100);
+}
+
+function showClickerRewardAd(bonusType) {
+    if (typeof ysdkInstance !== 'undefined' && ysdkInstance && ysdkInstance.adv) {
+        ysdkInstance.adv.showRewardedVideo({
+            callbacks: {
+                onOpen: () => {
+                    console.log('Реклама бонуса открыта.');
+                },
+                onRewarded: () => {
+                    console.log('Игрок досмотрел рекламу. Награда: ' + bonusType);
+                    applyClickerBonus(bonusType);
+                },
+                onClose: () => {
+                    console.log('Реклама бонуса закрыта.');
+                },
+                onError: (error) => {
+                    console.error('Ошибка воспроизведения рекламы:', error);
+                    applyClickerBonus(bonusType);
+                }
+            }
+        });
+    } else {
+        console.log('Локальный тест бонуса без SDK: ' + bonusType);
+        applyClickerBonus(bonusType);
+    }
+}
+
+function applyClickerBonus(type) {
+    if (type === 'click_boost') {
+        if (gameData.infiniteEnergyActive) return;
+        let originalClickPower = gameData.clickPower;
+        gameData.clickPower = originalClickPower * 2;
+        const exploitBtn = document.getElementById('exploit-btn') || document.getElementById('hacker-node');
+        if (exploitBtn) exploitBtn.style.borderColor = '#fbbf24';
+
+        showCenterNotification("[🔥 КИБЕР-АТАКА УСИЛЕНА: КЛИК Х2 НА 30 СЕКУНД!]", "#fbbf24");
+
+        setTimeout(() => {
+            gameData.clickPower = originalClickPower;
+            if (exploitBtn) exploitBtn.style.borderColor = 'var(--neon-bright)';
+            showCenterNotification("[Турбо-буст клика завершен]", "#ffaa00");
+            updateUI();
+        }, 30000);
+
+    } else if (type === 'energy_restore') {
+        gameData.currentEnergy = gameData.maxEnergy;
+        updateUI();
+        saveGame();
+        showCenterNotification("[⚡ ЭНЕРГИЯ СИСТЕМЫ ВОССТАНОВЛЕНА НА 100%!]", "#00ff66");
+
+    } else if (type === 'infinite_energy') {
+        gameData.infiniteEnergyActive = true;
+        gameData.lastEnergyAdTime = Date.now();
+        gameData.currentEnergy = gameData.maxEnergy;
+        updateUI();
+        saveGame();
+
+        showCenterNotification("[СИСТЕМА УСКОРЕНА: БЕСКОНЕЧНАЯ ЭНЕРГИЯ НА 30 СЕКУНД!]", "#00ffff");
+
+        setTimeout(() => {
+            gameData.infiniteEnergyActive = false;
+            updateUI();
+            saveGame();
+            showCenterNotification("[БЕСКОНЕЧНАЯ ЭНЕРГИЯ ЗАВЕРШЕНА]", "#ffaa00");
+        }, 30000);
+    }
+
+    updateUI();
 }
 
 clickBtn.addEventListener('click', (e) => {
     if (e.target && typeof e.target.blur === 'function') {
         e.target.blur();
+    }
+
+    if (gameData.currentEnergy < 8 && !gameData.infiniteEnergyActive) {
+        if (typeof showCenterNotification === 'function') {
+            showCenterNotification("[ОТКАЗ: НЕДОСТАТОЧНО ЭНЕРГИИ ДЛЯ ВЗЛОМА]", "#ff0055");
+        }
+        return;
+    }
+
+    if (!gameData.infiniteEnergyActive) {
+        gameData.currentEnergy -= 8;
+        if (gameData.currentEnergy < 0) gameData.currentEnergy = 0;
     }
 
     playHackerSound('click');
@@ -557,47 +723,6 @@ function buyUpgrade(type) {
     } else {
         showCenterNotification("[ ОТКАЗ В ДОСТУПЕ: НЕДОСТАТОЧНО BTC ]", "#ff0055");
     }
-}
-
-function triggerPrestige() {
-    const chipsToGet = getPendingChips();
-    if (chipsToGet > 0) {
-        if (confirm(`Вы уверены, что хотите сбросить систему? Вы потеряете все BTC и улучшения, но получите ${chipsToGet} Квантовых чипов.`)) {
-            gameData.chips += chipsToGet;
-            gameData.coins = 0;
-            gameData.clickPower = 1;
-            gameData.passiveIncome = 0;
-            for (let type in gameData.upgrades) {
-                gameData.upgrades[type].count = 0;
-            }
-
-            prestigeBtn.style.display = "none";
-            showCenterNotification("[ СИСТЕМА УСПЕШНО ПЕРЕЗАГРУЖЕНА ]", "#00ffff");
-            updateUI();
-            saveGame();
-        }
-    }
-}
-
-function showRewardAd() {
-    if (ysdkInstance) {
-        ysdkInstance.adv.showRewardedVideo({
-            callbacks: {
-                onRewarded: () => grantAdReward(),
-                onError: (e) => console.error(e)
-            }
-        });
-    } else {
-        grantAdReward();
-    }
-}
-
-function grantAdReward() {
-    const bonusCoins = Math.max(getTotalPassiveIncome() * 15, 30);
-    gameData.coins += bonusCoins;
-    updateUI();
-    saveGame();
-    showCenterNotification(`[ СИСТЕМА УСКОРЕНА: +${bonusCoins} BTC ]`, "#ffaa00");
 }
 
 function showCenterNotification(text, color = "var(--neon-bright)") {
@@ -780,8 +905,18 @@ function playHackerSound(type) {
     }
 }
 
-setInterval(() => {
-    if (Math.random() > 0.5) {
-        spawnExploit();
+
+
+document.addEventListener('click', function (event) {
+    if (event.target && (event.target.textContent.includes('RUN_EXPLOIT') || event.target.closest('.exploit-btn') || event.target.closest('#exploit-btn'))) {
+        setTimeout(() => {
+            if (typeof saveGame === 'function') {
+                saveGame();
+            } else if (typeof saveData === 'function') {
+                saveData();
+            } else if (typeof saveLocalData === 'function') {
+                saveLocalData();
+            }
+        }, 20);
     }
-}, 180000);
+});
